@@ -89,7 +89,7 @@ include { MULTIQC                                           } from '../../module
 // Remove genomic contaminants using bbsplit
 include { PREPARE_BBSPLIT                                    } from '../../subworkflows/local/prepare_bbsplit'
 // include { FASTQ_ALIGN_BAMCMP_BWA } from '../subworkflows/nf-core/fastq_align_bamcmp_bwa/main'
-include { BBMAP_BBSPLIT } from '../modules/nf-core/bbmap/bbsplit/main'
+include { BBMAP_BBSPLIT } from '../../modules/nf-core/bbmap/bbsplit/main'
 
 
 
