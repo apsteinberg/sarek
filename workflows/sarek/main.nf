@@ -87,7 +87,7 @@ include { VCF_ANNOTATE_ALL                                  } from '../../subwor
 include { MULTIQC                                           } from '../../modules/nf-core/multiqc/main'
 
 // Remove genomic contaminants using bamcmp
-include { PREPARE_GENOME                                    } from '../subworkflows/local/prepare_genome'
+include { PREPARE_BBSPLIT                                    } from '../subworkflows/local/prepare_bbsplit'
 include { FASTQ_ALIGN_BAMCMP_BWA } from '../subworkflows/nf-core/fastq_align_bamcmp_bwa/main'
 include { BBMAP_BBSPLIT } from '../modules/nf-core/bbmap/bbsplit/main'
 
@@ -314,15 +314,15 @@ workflow SAREK {
         //
         // prepare genome for bbsplit ...
         ch_versions = Channel.empty()
-        PREPARE_GENOME (
+        PREPARE_BBSPLIT (
             params.bbsplit_fasta_list
             params.bbsplit_index
         )
-        ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
+        ch_versions = ch_versions.mix(PREPARE_BBSPLIT.out.versions)
         if (!params.skip_bbsplit) {
             BBMAP_BBSPLIT (
                 reads_for_alignment,
-                PREPARE_GENOME.out.bbsplit_index,
+                PREPARE_BBSPLIT.out.bbsplit_index,
                 [],
                 [ [], [] ],
                 false

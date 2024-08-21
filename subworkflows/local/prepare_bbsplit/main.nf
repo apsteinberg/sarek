@@ -33,7 +33,7 @@ include { CAT_ADDITIONAL_FASTA                 } from '../../../modules/local/ca
 include { GTF_FILTER                           } from '../../../modules/local/gtf_filter'
 include { STAR_GENOMEGENERATE_IGENOMES         } from '../../../modules/local/star_genomegenerate_igenomes'
 
-workflow PREPARE_GENOME {
+workflow PREPARE_BBSPLIT {
     take:
     fasta                //      file: /path/to/genome.fasta
     gtf                  //      file: /path/to/genome.gtf
