@@ -86,6 +86,13 @@ include { VCF_ANNOTATE_ALL                                  } from '../../subwor
 // MULTIQC
 include { MULTIQC                                           } from '../../modules/nf-core/multiqc/main'
 
+// Remove genomic contaminants using bamcmp
+include { PREPARE_GENOME                                    } from '../subworkflows/local/prepare_genome'
+include { FASTQ_ALIGN_BAMCMP_BWA } from '../subworkflows/nf-core/fastq_align_bamcmp_bwa/main'
+include { BBMAP_BBSPLIT } from '../modules/nf-core/bbmap/bbsplit/main'
+
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -147,6 +154,22 @@ workflow SAREK {
     multiqc_report   = Channel.empty()
     reports          = Channel.empty()
     versions         = Channel.empty()
+
+     /*
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         VALIDATE INPUTS
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+     // Check if file with list of fastas is provided when running BBSplit
+     if (!params.skip_bbsplit && !params.bbsplit_index && params.bbsplit_fasta_list) {
+         ch_bbsplit_fasta_list = file(params.bbsplit_fasta_list)
+         if (ch_bbsplit_fasta_list.isEmpty()) {exit 1, "File provided with --bbsplit_fasta_list is empty: ${ch_bbsplit_fasta_list.getName()}!"}
+     }
+
+     // Check alignment parameters
+     def prepareToolIndices  = []
+     if (!params.skip_bbsplit) { prepareToolIndices << 'bbsplit' }
 
     // PREPROCESSING
 
@@ -255,7 +278,6 @@ workflow SAREK {
 
             reports = reports.mix(FASTP.out.json.collect{ meta, json -> json })
             reports = reports.mix(FASTP.out.html.collect{ meta, html -> html })
-
             if (params.split_fastq) {
                 reads_for_alignment = FASTP.out.reads.map{ meta, reads ->
                     read_files = reads.sort(false) { a,b -> a.getName().tokenize('.')[0] <=> b.getName().tokenize('.')[0] }.collate(2)
@@ -287,7 +309,28 @@ workflow SAREK {
             if (meta.size * meta.num_lanes == 1) [ meta + [ id:meta.sample ], reads ]
             else [ meta, reads ]
         }
-
+        //
+        // MODULE: Remove genome contaminant reads
+        //
+        // prepare genome for bbsplit ...
+        ch_versions = Channel.empty()
+        PREPARE_GENOME (
+            params.bbsplit_fasta_list
+            params.bbsplit_index
+        )
+        ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
+        if (!params.skip_bbsplit) {
+            BBMAP_BBSPLIT (
+                reads_for_alignment,
+                PREPARE_GENOME.out.bbsplit_index,
+                [],
+                [ [], [] ],
+                false
+            )
+            .primary_fastq
+            .set { reads_for_alignment }
+            ch_versions = ch_versions.mix(BBMAP_BBSPLIT.out.versions.first())
+        }
         // reads will be sorted
         sort_bam = true
         FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON(reads_for_alignment, index_alignment, sort_bam, fasta, fasta_fai)
