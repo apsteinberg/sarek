@@ -86,9 +86,9 @@ include { VCF_ANNOTATE_ALL                                  } from '../../subwor
 // MULTIQC
 include { MULTIQC                                           } from '../../modules/nf-core/multiqc/main'
 
-// Remove genomic contaminants using bamcmp
-include { PREPARE_BBSPLIT                                    } from '../subworkflows/local/prepare_bbsplit'
-include { FASTQ_ALIGN_BAMCMP_BWA } from '../subworkflows/nf-core/fastq_align_bamcmp_bwa/main'
+// Remove genomic contaminants using bbsplit
+include { PREPARE_BBSPLIT                                    } from '../../subworkflows/local/prepare_bbsplit'
+// include { FASTQ_ALIGN_BAMCMP_BWA } from '../subworkflows/nf-core/fastq_align_bamcmp_bwa/main'
 include { BBMAP_BBSPLIT } from '../modules/nf-core/bbmap/bbsplit/main'
 
 
