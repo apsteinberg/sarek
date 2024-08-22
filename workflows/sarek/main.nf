@@ -317,6 +317,7 @@ workflow SAREK {
         PREPARE_BBSPLIT (
             params.bbsplit_fasta_list
             params.bbsplit_index
+            prepareToolIndices
         )
         ch_versions = ch_versions.mix(PREPARE_BBSPLIT.out.versions)
         if (!params.skip_bbsplit) {
