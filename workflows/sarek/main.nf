@@ -312,15 +312,14 @@ workflow SAREK {
         //
         // MODULE: Remove genome contaminant reads
         //
-        // prepare genome for bbsplit ...
-        ch_versions = Channel.empty()
-        PREPARE_BBSPLIT (
-            params.bbsplit_fasta_list
-            params.bbsplit_index
-            prepareToolIndices
-        )
-        ch_versions = ch_versions.mix(PREPARE_BBSPLIT.out.versions)
         if (!params.skip_bbsplit) {
+            // prepare genome for bbsplit ...
+            ch_versions = Channel.empty()
+            PREPARE_BBSPLIT (
+                params.bbsplit_fasta_list
+                params.bbsplit_index
+            )
+            ch_versions = ch_versions.mix(PREPARE_BBSPLIT.out.versions)
             BBMAP_BBSPLIT (
                 reads_for_alignment,
                 PREPARE_BBSPLIT.out.bbsplit_index,
