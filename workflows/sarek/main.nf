@@ -319,8 +319,8 @@ workflow SAREK {
             // prepare genome for bbsplit ...
             ch_versions = Channel.empty()
             PREPARE_BBSPLIT (
-                bbsplit_fasta_list
-                bbsplit_index
+                params.bbsplit_fasta_list
+                params.bbsplit_index
             )
             ch_versions = ch_versions.mix(PREPARE_BBSPLIT.out.versions)
             BBMAP_BBSPLIT (
