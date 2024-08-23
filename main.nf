@@ -260,6 +260,11 @@ workflow NFCORE_SAREK {
             vep_cache    = ANNOTATION_CACHE_INITIALISATION.out.ensemblvep_cache
     }
 
+    // bbsplit params initialize
+    bbsplit = params.bbsplit
+    bbsplit_fasta_list = params.bbsplit_fasta_list
+    bbsplit_index = params.bbsplit_index
+
     //
     // WORKFLOW: Run pipeline
     //
@@ -307,7 +312,10 @@ workflow NFCORE_SAREK {
         vep_extra_files,
         vep_fasta,
         vep_genome,
-        vep_species
+        vep_species,
+        bbsplit
+        bbsplit_fasta_list
+        bbsplit_index
     )
 
     emit:
